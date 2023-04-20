@@ -1,11 +1,11 @@
 from datetime import timedelta
 
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.password_validation import validate_password
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
 
-from .models import User
+from .models import User, UserProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,6 +24,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         user.set_password(password)
         user.save()
+        UserProfile.objects.create(user=user)
         return user
 
 

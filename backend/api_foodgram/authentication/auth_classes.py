@@ -1,6 +1,7 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import BlacklistedToken
 from rest_framework_simplejwt.exceptions import InvalidToken
+
+from .models import BlacklistedToken
 
 
 class CustomJWTAuthentication(JWTAuthentication):

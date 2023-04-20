@@ -1,9 +1,11 @@
-from rest_framework import serializers
-from .models import Recipe, Ingredient, Tag, RecipeIngredient
-from users.serializers import UserSerializer
-from django.core.files.base import ContentFile
 import base64
+
+from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+from users.serializers import UserSerializer
+
+from .models import Ingredient, Recipe, RecipeIngredient, Tag
 
 
 class Base64ImageField(serializers.ImageField):
@@ -94,3 +96,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 ingredient=current_ingredient,
                 amount=ingredient['amount'],
                 recipe=instance)
+
+
+class ShortRecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')

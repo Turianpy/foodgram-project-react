@@ -1,10 +1,11 @@
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions, status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.exceptions import InvalidToken
-from .serializers import LoginSerializer
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+
 from .models import BlacklistedToken
+from .serializers import LoginSerializer
 
 
 @api_view(['POST'])
