@@ -15,7 +15,7 @@ class User(AbstractUser):
 
 
 class UserProfile(models.Model):
-    subscriptions = models.ManyToManyField('self', related_name='subscribers', symmetrical=False)
+    subscriptions = models.ManyToManyField(User, related_name='subscribers', symmetrical=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     favorites = models.ManyToManyField('recipes.Recipe', related_name='favorited_by', blank=True)
     shopping_cart = models.ManyToManyField('recipes.Recipe', related_name='added_to_cart_by', blank=True)

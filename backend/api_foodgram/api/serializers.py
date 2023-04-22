@@ -1,11 +1,12 @@
 import base64
 
+from django.contrib.auth.password_validation import validate_password
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
-from users.serializers import UserSerializer
-
-from .models import Ingredient, Recipe, RecipeIngredient, Tag
+from rest_framework.validators import ValidationError
+from users.models import User, UserProfile
 
 
 class Base64ImageField(serializers.ImageField):
@@ -15,6 +16,12 @@ class Base64ImageField(serializers.ImageField):
             ext = format.split('/')[-1]
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
         return super().to_internal_value(data)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'username', 'first_name', 'last_name',)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -102,3 +109,44 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+
+
+class UserSerializerWithRecipes(UserSerializer):
+    recipes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('email', 'username', 'first_name', 'last_name', 'recipes',)
+
+    def get_recipes(self, obj):
+        recipes = obj.recipes.all()
+        return ShortRecipeSerializer(recipes, many=True).data
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'username', 'first_name', 'last_name', 'password',)
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User.objects.create_user(**validated_data)
+        user.set_password(password)
+        user.save()
+        UserProfile.objects.create(user=user)
+        return user
+
+
+class SetPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(required=True)
+    current_password = serializers.CharField(required=True)
+
+    def validate(self, data):
+        if not self.context['request'].user.check_password(data['current_password']):
+            raise ValidationError('Current password is not correct')
+        try:
+            validate_password(data['new_password'])
+        except ValidationError as e:
+            raise ValidationError({'new_password': e.messages})
+        return data
