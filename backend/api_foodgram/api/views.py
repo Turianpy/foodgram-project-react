@@ -11,12 +11,13 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
-from users.models import User, UserProfile
+from users.models import User
 
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeSerializer, SetPasswordSerializer,
                           ShortRecipeSerializer, TagSerializer,
-                          UserCreateSerializer, UserSerializer, UserSerializerWithRecipes)
+                          UserCreateSerializer, UserSerializer,
+                          UserSerializerWithRecipes)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -85,7 +86,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         buffer = io.BytesIO()
         for ingredient, amount_data in cart.items():
-            buffer.write(f'{ingredient} - {amount_data["amount"]} {amount_data["measurement_unit"]} \n'.encode())
+            buffer.write((
+                f'{ingredient} - {amount_data["amount"]}'
+                f'{amount_data["measurement_unit"]} \n'.encode()))
         buffer.seek(0)
 
         file_name = 'shopping_cart.txt'
@@ -129,7 +132,10 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             validate_password(serializer.validated_data['password'])
         except ValidationError as e:
-            return Response({'password': e.messages}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'password': e.messages},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -156,7 +162,10 @@ class UserViewSet(viewsets.ModelViewSet):
     def set_password(self, request):
         data = request.data
         data['user'] = request.user
-        serializer = SetPasswordSerializer(data=data, context={'request': request})
+        serializer = SetPasswordSerializer(
+            data=data,
+            context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         request.user.set_password(serializer.validated_data['new_password'])
         request.user.save()

@@ -24,7 +24,10 @@ class Recipe(models.Model):
         Ingredient, through='RecipeIngredient'
     )
     tags = models.ManyToManyField(Tag)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipes')
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='recipes'
+    )
     name = models.CharField(max_length=200)
     image = models.ImageField(upload_to='media/')
     text = models.TextField()
@@ -32,6 +35,14 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients')
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name='used_in')
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredients'
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name='used_in'
+    )
     amount = models.PositiveSmallIntegerField()

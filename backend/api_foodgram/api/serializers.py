@@ -62,7 +62,10 @@ class IngredientRecipeCreateSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
-    ingredients = IngredientRecipeCreateSerializer(many=True, source='recipe_ingredients')
+    ingredients = IngredientRecipeCreateSerializer(
+        many=True,
+        source='recipe_ingredients'
+    )
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True
@@ -111,7 +114,6 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-
 class UserSerializerWithRecipes(UserSerializer):
     recipes = serializers.SerializerMethodField()
 
@@ -143,7 +145,8 @@ class SetPasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True)
 
     def validate(self, data):
-        if not self.context['request'].user.check_password(data['current_password']):
+        user = self.context['request'].user
+        if not user.check_password(data['current_password']):
             raise ValidationError('Current password is not correct')
         try:
             validate_password(data['new_password'])
