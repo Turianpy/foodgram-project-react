@@ -9,6 +9,10 @@ from .models import Ingredient, Recipe, Tag
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeSerializer, ShortRecipeSerializer,
                           TagSerializer)
+from .utils import calculate_shopping_cart
+import io
+from django.http import FileResponse, HttpResponse
+from wsgiref.util import FileWrapper
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -68,13 +72,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def download_shopping_cart(self, request):
-        user = request.user
-        recipes = user.profile.shopping_cart.all()
-        ingredients = []
-        for recipe in recipes:
-            for ingredient in recipe.ingredients.all():
-                ingredients.append(ingredient)
-        return Response(ingredients, status=status.HTTP_200_OK)
+        """
+        Download shopping cart as a text file.
+        """
+        cart = calculate_shopping_cart(request.user)
+        if not cart:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        buffer = io.BytesIO()
+        for ingredient, amount_data in cart.items():
+            buffer.write(f'{ingredient} - {amount_data["amount"]} {amount_data["measurement_unit"]} \n'.encode())
+        buffer.seek(0)
+
+        file_name = 'shopping_cart.txt'
+
+        response = HttpResponse(FileWrapper(buffer), content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+        buffer.close()
+
+        return response
+
 
 
 class IngredientViewSet(
