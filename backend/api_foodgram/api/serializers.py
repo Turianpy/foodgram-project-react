@@ -40,10 +40,20 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = IngredientSerializer(many=True)
     tags = TagSerializer(many=True)
     author = UserSerializer()
+    is_favorited = serializers.SerializerMethodField(method_name='favorited')
+    is_in_shopping_cart = serializers.SerializerMethodField(method_name='in_shopping_cart')
 
     class Meta:
         model = Recipe
         fields = '__all__'
+
+    def favorited(self, obj):
+        user = self.context['request'].user
+        return user.profile in obj.favorited_by.all()
+
+    def in_shopping_cart(self, obj):
+        user = self.context['request'].user
+        return user.profile in obj.added_to_cart_by.all()
 
 
 class IngredientRecipeCreateSerializer(serializers.ModelSerializer):

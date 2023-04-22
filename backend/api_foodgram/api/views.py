@@ -39,6 +39,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        is_favorited = request.query_params.get('is_favorited', None)
+        is_in_shopping_cart = request.query_params.get('is_in_shopping_cart', None)
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(
+            page if page is not None else queryset,
+            many=True, context={'request': request}
+        )
+        data = serializer.data
+        if is_favorited is not None:
+            data = [recipe for recipe in data if recipe['is_favorited']]
+        if is_in_shopping_cart is not None:
+            data = [recipe for recipe in data if recipe['is_in_shopping_cart']]
+
+        return Response(data, status=status.HTTP_200_OK)
+
     @action(
         methods=['post', 'delete'],
         detail=True,
