@@ -108,6 +108,7 @@ class IngredientViewSet(
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
 
 
 class TagViewSet(
@@ -118,6 +119,7 @@ class TagViewSet(
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -193,5 +195,9 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def subscriptions(self, request):
         queryset = request.user.profile.subscriptions.all()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = UserSerializerWithRecipes(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = UserSerializerWithRecipes(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
