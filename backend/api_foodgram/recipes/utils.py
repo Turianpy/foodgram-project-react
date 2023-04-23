@@ -1,4 +1,8 @@
 def calculate_shopping_cart(user):
+    """
+    Calculate shopping cart for a user.
+    Duplicate ingredients are summed on amount.
+    """
     recipes = user.profile.shopping_cart.all()
     ingredients = {}
     for recipe in recipes:

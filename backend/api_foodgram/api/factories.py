@@ -43,6 +43,9 @@ class IngredientFactory(factory.django.DjangoModelFactory):
 
 
 class RandomIngredentFactory(factory.django.DjangoModelFactory):
+    """
+    Takes a random ingredient from the database.
+    """
     class Meta:
         model = Ingredient
 
@@ -60,7 +63,9 @@ class RecipeFactory(factory.django.DjangoModelFactory):
     name = factory.LazyAttribute(lambda _: fake.word())
     image = factory.django.ImageField(color='blue')
     text = factory.LazyAttribute(lambda _: fake.text())
-    cooking_time = factory.LazyAttribute(lambda _: fake.random_int(min=1, max=100))
+    cooking_time = factory.LazyAttribute(
+        lambda _: fake.random_int(min=1, max=100)
+    )
 
 
 class RecipeIngredientFactory(factory.django.DjangoModelFactory):

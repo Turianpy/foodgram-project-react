@@ -10,6 +10,9 @@ from users.models import User, UserProfile
 
 
 class Base64ImageField(serializers.ImageField):
+    """
+    Custom serializer field for uploading base64 encoded images.
+    """
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')
@@ -41,7 +44,9 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     author = UserSerializer()
     is_favorited = serializers.SerializerMethodField(method_name='favorited')
-    is_in_shopping_cart = serializers.SerializerMethodField(method_name='in_shopping_cart')
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='in_shopping_cart'
+    )
 
     class Meta:
         model = Recipe
@@ -57,6 +62,10 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientRecipeCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for RecipeIngredient model + Ingredient model
+    for use in RecipeCreateSerializer.
+    """
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
         source='ingredient.id')
@@ -72,6 +81,9 @@ class IngredientRecipeCreateSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Recipe creation and updates
+    """
     ingredients = IngredientRecipeCreateSerializer(
         many=True,
         source='recipe_ingredients'
@@ -119,12 +131,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
+    """
+    Recipe serializer for use in various User serializers
+    """
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class UserSerializerWithRecipes(UserSerializer):
+    """
+    User serializer with recipes and recipes_limit param handling
+    """
     recipes = ShortRecipeSerializer(many=True, read_only=True)
 
     class Meta:
@@ -140,6 +158,9 @@ class UserSerializerWithRecipes(UserSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user creation
+    """
     class Meta:
         model = User
         fields = ('email', 'username', 'first_name', 'last_name', 'password',)

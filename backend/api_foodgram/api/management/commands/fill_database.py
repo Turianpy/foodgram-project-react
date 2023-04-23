@@ -13,7 +13,10 @@ class Command(BaseCommand):
     help = 'Fill database with test data'
 
     def add_arguments(self, parser) -> None:
-        parser.add_argument('file_path', type=str, help='Path to file with data')
+        parser.add_argument(
+            'file_path',
+            type=str,
+            help='Path to file with data')
 
     def handle(self, *args, **options):
         file_path = options['file_path']
@@ -32,7 +35,8 @@ class Command(BaseCommand):
         tags = TagFactory.create_batch(10)
         recipes = Recipe.objects.all()
         for recipe in recipes:
-            ingredients = RandomIngredentFactory.create_batch(random.randint(1, 10))
+            ingredients = RandomIngredentFactory.create_batch(
+                random.randint(1, 10))
             for ingredient in ingredients:
                 RecipeIngredientFactory(
                     recipe=recipe,

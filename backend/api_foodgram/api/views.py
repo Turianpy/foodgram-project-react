@@ -23,6 +23,7 @@ from .serializers import (IngredientSerializer, RecipeCreateSerializer,
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+
     queryset = Recipe.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -46,7 +47,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         is_favorited = request.query_params.get('is_favorited', None)
-        is_in_shopping_cart = request.query_params.get('is_in_shopping_cart', None)
+        is_in_shopping_cart = request.query_params.get(
+            'is_in_shopping_cart',
+            None)
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(
             page if page is not None else queryset,
@@ -225,9 +228,17 @@ class UserViewSet(viewsets.ModelViewSet):
         queryset = request.user.profile.subscriptions.all()
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = UserSerializerWithRecipes(page, context=context, many=True)
+            serializer = UserSerializerWithRecipes(
+                page,
+                context=context,
+                many=True
+            )
             serializer.is_valid()
             return self.get_paginated_response(serializer.data)
-        serializer = UserSerializerWithRecipes(data=queryset, context=context, many=True)
+        serializer = UserSerializerWithRecipes(
+            data=queryset,
+            context=context,
+            many=True
+        )
         serializer.is_valid()
         return Response(serializer.data, status=status.HTTP_200_OK)

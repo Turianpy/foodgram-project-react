@@ -3,9 +3,13 @@ from django.db import models
 
 
 class User(AbstractUser):
-    email = models.EmailField(max_length=200, unique=True)
-    first_name = models.CharField(max_length=200)
-    last_name = models.CharField(max_length=200)
+    email = models.EmailField(
+        max_length=200,
+        unique=True,
+        verbose_name='Email'
+    )
+    first_name = models.CharField(max_length=200, verbose_name='Имя')
+    last_name = models.CharField(max_length=200, verbose_name='Фамилия')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
@@ -18,22 +22,26 @@ class UserProfile(models.Model):
     subscriptions = models.ManyToManyField(
         User,
         related_name='subscribers',
-        symmetrical=False
+        symmetrical=False,
+        verbose_name='Подписки',
     )
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name='profile'
+        related_name='profile',
+        verbose_name='Пользователь'
     )
     favorites = models.ManyToManyField(
         'recipes.Recipe',
         related_name='favorited_by',
-        blank=True
+        blank=True,
+        verbose_name='Избранное'
     )
     shopping_cart = models.ManyToManyField(
         'recipes.Recipe',
         related_name='added_to_cart_by',
-        blank=True
+        blank=True,
+        verbose_name='Корзина'
     )
 
     def __str__(self) -> str:
