@@ -18,12 +18,16 @@ from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           ShortRecipeSerializer, TagSerializer,
                           UserCreateSerializer, UserSerializer,
                           UserSerializerWithRecipes)
+from .filters import RecipeFilterSet, IngredientFilterSet
+from django_filters import rest_framework as f
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
+    filter_backends = (f.DjangoFilterBackend,)
+    filterset_class = RecipeFilterSet
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -126,6 +130,8 @@ class IngredientViewSet(
     serializer_class = IngredientSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = None
+    filter_backends = (f.DjangoFilterBackend,)
+    filterset_class = IngredientFilterSet
 
 
 class TagViewSet(
@@ -144,6 +150,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ['post', 'get', 'patch', 'delete']
+    filter_backends = (f.DjangoFilterBackend,)
 
     def create(self, request, *args, **kwargs):
         serializer = UserCreateSerializer(data=request.data)
@@ -197,7 +204,9 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def subscribe(self, request, pk):
         user = get_object_or_404(User, id=pk)
-        serializer = UserSerializer(user)
+        recipes_limit = request.query_params.get('recipes_limit')
+        context = {'recipes_limit': recipes_limit}
+        serializer = UserSerializerWithRecipes(user, context=context)
         if request.method == 'POST':
             request.user.profile.subscriptions.add(user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -211,10 +220,14 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def subscriptions(self, request):
+        recipes_limit = request.query_params.get('recipes_limit')
+        context = {'recipes_limit': recipes_limit}
         queryset = request.user.profile.subscriptions.all()
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = UserSerializerWithRecipes(page, many=True)
+            serializer = UserSerializerWithRecipes(page, context=context, many=True)
+            serializer.is_valid()
             return self.get_paginated_response(serializer.data)
-        serializer = UserSerializerWithRecipes(queryset, many=True)
+        serializer = UserSerializerWithRecipes(data=queryset, context=context, many=True)
+        serializer.is_valid()
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -13,6 +13,6 @@ WORKDIR /app/api_foodgram
 
 ENV PYTHONPATH .
 
-CMD ["gunicorn", "api_foodgram.wsgi:application", "--bind", "0:8000", "--workers", "3" "--reload"]
+CMD ["gunicorn", "api_foodgram.wsgi:application", "--bind", "0:8000", "--workers", "3"]
 
 EXPOSE 8000

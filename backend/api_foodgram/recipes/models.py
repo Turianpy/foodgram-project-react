@@ -32,6 +32,10 @@ class Recipe(models.Model):
     image = models.ImageField(upload_to='media/')
     text = models.TextField()
     cooking_time = models.PositiveSmallIntegerField()
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created']
 
 
 class RecipeIngredient(models.Model):

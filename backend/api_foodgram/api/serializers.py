@@ -125,15 +125,18 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
 
 
 class UserSerializerWithRecipes(UserSerializer):
-    recipes = serializers.SerializerMethodField()
+    recipes = ShortRecipeSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
         fields = ('email', 'username', 'first_name', 'last_name', 'recipes',)
 
-    def get_recipes(self, obj):
-        recipes = obj.recipes.all()
-        return ShortRecipeSerializer(recipes, many=True).data
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        recipes_limit = self.context.get('recipes_limit')
+        if recipes_limit:
+            data['recipes'] = data['recipes'][:int(recipes_limit)]
+        return data
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
