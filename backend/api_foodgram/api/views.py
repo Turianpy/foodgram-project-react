@@ -5,6 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework as f
 from recipes.models import Ingredient, Recipe, Tag
 from recipes.utils import calculate_shopping_cart
 from rest_framework import permissions, status, viewsets
@@ -13,13 +14,12 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from users.models import User
 
+from .filters import IngredientFilterSet, RecipeFilterSet
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeSerializer, SetPasswordSerializer,
                           ShortRecipeSerializer, TagSerializer,
                           UserCreateSerializer, UserSerializer,
                           UserSerializerWithRecipes)
-from .filters import RecipeFilterSet, IngredientFilterSet
-from django_filters import rest_framework as f
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
