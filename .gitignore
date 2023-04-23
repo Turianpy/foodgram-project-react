@@ -134,3 +134,6 @@ dmypy.json
 
 # docs
 api.yaml
+
+# media
+media/
