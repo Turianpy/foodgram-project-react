@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib import admin
 from users.models import User
 
 
@@ -12,6 +13,10 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        ordering = ['name']
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Tag(models.Model):
@@ -26,6 +31,10 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+        ordering = ['name']
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Recipe(models.Model):
@@ -55,6 +64,9 @@ class Recipe(models.Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class RecipeIngredient(models.Model):
     """
@@ -63,11 +75,30 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients'
+        related_name='recipe_ingredients',
+        verbose_name='Рецепт'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='used_in'
+        related_name='used_in',
+        verbose_name='Ингредиент'
     )
-    amount = models.PositiveSmallIntegerField()
+    amount = models.PositiveSmallIntegerField(verbose_name='Количество')
+
+    class Meta:
+        ordering = ['recipe']
+        verbose_name = 'Связующая модель для рецепта и ингредиента'
+
+
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    min_num = 1
+
+
+class RecipeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'author', 'created', 'cooking_time')
+    list_filter = ('author', 'created', 'cooking_time')
+    search_fields = ('name', 'author__username', 'text')
+    model = Recipe
+    inlines = (RecipeIngredientInline,)

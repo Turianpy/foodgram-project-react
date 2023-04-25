@@ -7,13 +7,13 @@ def calculate_shopping_cart(user):
     ingredients = {}
     for recipe in recipes:
         recipe_ingredients = recipe.recipe_ingredients.all()
-        for recipe_ingredient in recipe_ingredients:
-            ingredient = recipe_ingredient.ingredient
+        for ri in recipe_ingredients:
+            ingredient = ri.ingredient
             if ingredient.name in ingredients:
-                ingredients[ingredient.name]['amount'] += recipe_ingredient.amount
+                ingredients[ingredient.name]['amount'] += ri.amount
             else:
                 ingredients[ingredient.name] = {
                     'measurement_unit': ingredient.measurement_unit,
-                    'amount': recipe_ingredient.amount
+                    'amount': ri.amount
                 }
     return ingredients

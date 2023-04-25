@@ -3,10 +3,11 @@ import random
 import sys
 
 from django.core.management import BaseCommand
-from api.factories import (IngredientFactory, RandomIngredentFactory,
-                           RecipeFactory, RecipeIngredientFactory, TagFactory,
-                           UserFactory)
 from recipes.models import Recipe
+
+from backend.tests.factories import (IngredientFactory, RandomIngredentFactory,
+                                     RecipeFactory, RecipeIngredientFactory,
+                                     TagFactory, UserFactory)
 
 
 class Command(BaseCommand):

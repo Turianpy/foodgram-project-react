@@ -1,9 +1,10 @@
 import random
 
 import factory
+from api_foodgram.recipes.models import (Ingredient, Recipe, RecipeIngredient,
+                                         Tag)
+from api_foodgram.users.models import User
 from faker import Faker
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
-from users.models import User
 
 fake = Faker('ru_RU')
 

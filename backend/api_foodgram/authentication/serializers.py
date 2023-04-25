@@ -10,24 +10,12 @@ class LoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'password')
 
-    def validate(self, data):
-        email = data.get('email')
-        password = data.get('password')
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Пользователь не найден')
+        return value
 
-        if email and password:
-            user = User.objects.filter(email=email).first()
-            if user:
-                if not user.check_password(password):
-                    raise serializers.ValidationError(
-                        'Incorrect password'
-                    )
-            else:
-                raise serializers.ValidationError(
-                    'User with this email does not exist'
-                )
-            data['user'] = user
-        else:
-            raise serializers.ValidationError(
-                'Email and password are required'
-            )
-        return data
+    def validate_password(self, value):
+        if not User.objects.filter(password=value).exists():
+            raise serializers.ValidationError('Неверный пароль')
+        return value

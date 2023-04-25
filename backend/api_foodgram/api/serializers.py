@@ -2,10 +2,10 @@ import base64
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.files.base import ContentFile
-from django.shortcuts import get_object_or_404
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
+
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User, UserProfile
 
 
@@ -47,6 +47,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField(
         method_name='in_shopping_cart'
     )
+    cooking_time = serializers.IntegerField(min_value=1, max_value=32_000)
 
     class Meta:
         model = Recipe
@@ -119,21 +120,22 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return instance
 
     def add_ingredients(self, instance, ingredients):
-        for ingredient in ingredients:
-            current_ingredient = (
-                get_object_or_404(
-                    Ingredient,
-                    id=ingredient['ingredient']['id'].id))
-            RecipeIngredient.objects.create(
-                ingredient=current_ingredient,
-                amount=ingredient['amount'],
-                recipe=instance)
+        RecipeIngredient.objects.bulk_create([
+            RecipeIngredient(
+                recipe=instance,
+                ingredient=ingredient['ingredient'],
+                amount=ingredient['amount']
+            ) for ingredient in ingredients
+        ])
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
     """
     Recipe serializer for use in various User serializers
     """
+
+    cooking_time = serializers.IntegerField(min_value=1, max_value=32_000)
+
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
@@ -178,12 +180,11 @@ class SetPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
     current_password = serializers.CharField(required=True)
 
-    def validate(self, data):
-        user = self.context['request'].user
-        if not user.check_password(data['current_password']):
-            raise ValidationError('Current password is not correct')
-        try:
-            validate_password(data['new_password'])
-        except ValidationError as e:
-            raise ValidationError({'new_password': e.messages})
-        return data
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+    def validate_current_password(self, value):
+        if not self.context['request'].user.check_password(value):
+            raise ValidationError('Неверный пароль')
+        return value

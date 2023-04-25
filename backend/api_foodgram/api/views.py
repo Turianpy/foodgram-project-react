@@ -6,26 +6,29 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as f
-from recipes.models import Ingredient, Recipe, Tag
-from recipes.utils import calculate_shopping_cart
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
+
+from recipes.models import Ingredient, Recipe, Tag
+from recipes.utils import calculate_shopping_cart
 from users.models import User
 
 from .filters import IngredientFilterSet, RecipeFilterSet
+from .permissions import AllowDestroyForSubscribeOnly, IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeSerializer, SetPasswordSerializer,
                           ShortRecipeSerializer, TagSerializer,
                           UserCreateSerializer, UserSerializer,
                           UserSerializerWithRecipes)
+from .utils import add_or_remove_from_profile
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
 
     queryset = Recipe.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAuthorOrReadOnly]
     http_method_names = ['get', 'post', 'patch', 'delete']
     filter_backends = (f.DjangoFilterBackend,)
     filterset_class = RecipeFilterSet
@@ -38,31 +41,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeCreateSerializer
         return RecipeSerializer
 
-    def update(self, request, *args, **kwargs):
-        recipe = self.get_object()
-        if request.user != recipe.author:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        return super().update(request, *args, **kwargs)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        is_favorited = request.query_params.get('is_favorited', None)
-        is_in_shopping_cart = request.query_params.get(
-            'is_in_shopping_cart',
-            None)
-        page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(
-            page if page is not None else queryset,
-            many=True, context={'request': request}
-        )
-        data = serializer.data
-        if is_favorited is not None:
-            data = [recipe for recipe in data if recipe['is_favorited']]
-        if is_in_shopping_cart is not None:
-            data = [recipe for recipe in data if recipe['is_in_shopping_cart']]
-
-        return Response(data, status=status.HTTP_200_OK)
-
     @action(
         methods=['post', 'delete'],
         detail=True,
@@ -72,12 +50,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
         serializer = ShortRecipeSerializer(recipe)
         user = request.user
-        if request.method == 'POST':
-            user.profile.favorites.add(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            user.profile.favorites.remove(recipe)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        add_or_remove_from_profile(
+            request,
+            user.profile.favorites,
+            recipe,
+            serializer.data
+        )
 
     @action(
         methods=['post', 'delete'],
@@ -88,12 +66,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
         serializer = ShortRecipeSerializer(recipe)
         user = request.user
-        if request.method == 'POST':
-            user.profile.shopping_cart.add(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            user.profile.shopping_cart.remove(recipe)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        add_or_remove_from_profile(
+            request,
+            user.profile.shopping_cart,
+            recipe,
+            serializer.data
+        )
 
     @action(
         methods=['get'],
@@ -154,6 +132,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     http_method_names = ['post', 'get', 'patch', 'delete']
     filter_backends = (f.DjangoFilterBackend,)
+    permission_classes = [AllowDestroyForSubscribeOnly]
 
     def create(self, request, *args, **kwargs):
         serializer = UserCreateSerializer(data=request.data)
@@ -210,12 +189,12 @@ class UserViewSet(viewsets.ModelViewSet):
         recipes_limit = request.query_params.get('recipes_limit')
         context = {'recipes_limit': recipes_limit}
         serializer = UserSerializerWithRecipes(user, context=context)
-        if request.method == 'POST':
-            request.user.profile.subscriptions.add(user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            request.user.profile.subscriptions.remove(user)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        add_or_remove_from_profile(
+            request,
+            request.user.profile.subscriptions,
+            user,
+            serializer.data
+        )
 
     @action(
         detail=False,
@@ -233,12 +212,12 @@ class UserViewSet(viewsets.ModelViewSet):
                 context=context,
                 many=True
             )
-            serializer.is_valid()
+            serializer.is_valid(raise_exception=True)
             return self.get_paginated_response(serializer.data)
         serializer = UserSerializerWithRecipes(
             data=queryset,
             context=context,
             many=True
         )
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

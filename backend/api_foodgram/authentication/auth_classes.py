@@ -13,7 +13,7 @@ class CustomJWTAuthentication(JWTAuthentication):
         auth = super().authenticate(request)
         if auth is None:
             return None
-        user, token = auth
+        _, token = auth
         if BlacklistedToken.objects.filter(token=token).exists():
             raise InvalidToken()
         return auth
