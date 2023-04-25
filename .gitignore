@@ -137,3 +137,6 @@ api.yaml
 
 # media
 media/
+
+# static
+static/
