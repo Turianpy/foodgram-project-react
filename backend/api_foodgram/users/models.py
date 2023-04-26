@@ -29,6 +29,7 @@ class UserProfile(models.Model):
         related_name='subscribers',
         symmetrical=False,
         verbose_name='Подписки',
+        blank=True
     )
     user = models.OneToOneField(
         User,

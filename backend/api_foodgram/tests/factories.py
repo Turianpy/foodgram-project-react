@@ -1,10 +1,9 @@
 import random
 
 import factory
-from api_foodgram.recipes.models import (Ingredient, Recipe, RecipeIngredient,
-                                         Tag)
-from api_foodgram.users.models import User
 from faker import Faker
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from users.models import User, UserProfile
 
 fake = Faker('ru_RU')
 
@@ -22,6 +21,13 @@ class UserFactory(factory.django.DjangoModelFactory):
     password = factory.LazyAttribute(lambda _: fake.password())
     first_name = factory.LazyAttribute(lambda _: fake.first_name())
     last_name = factory.LazyAttribute(lambda _: fake.last_name())
+
+
+class UserProfileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = UserProfile
+
+    user = factory.SubFactory(UserFactory)
 
 
 class TagFactory(factory.django.DjangoModelFactory):

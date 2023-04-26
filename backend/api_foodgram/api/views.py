@@ -6,13 +6,12 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as f
+from recipes.models import Ingredient, Recipe, Tag
+from recipes.utils import calculate_shopping_cart
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
-
-from recipes.models import Ingredient, Recipe, Tag
-from recipes.utils import calculate_shopping_cart
 from users.models import User
 
 from .filters import IngredientFilterSet, RecipeFilterSet
@@ -50,7 +49,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
         serializer = ShortRecipeSerializer(recipe)
         user = request.user
-        add_or_remove_from_profile(
+        return add_or_remove_from_profile(
             request,
             user.profile.favorites,
             recipe,
@@ -66,7 +65,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
         serializer = ShortRecipeSerializer(recipe)
         user = request.user
-        add_or_remove_from_profile(
+        return add_or_remove_from_profile(
             request,
             user.profile.shopping_cart,
             recipe,
@@ -109,7 +108,7 @@ class IngredientViewSet(
 ):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     pagination_class = None
     filter_backends = (f.DjangoFilterBackend,)
     filterset_class = IngredientFilterSet
@@ -122,8 +121,9 @@ class TagViewSet(
 ):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     pagination_class = None
+    filter_backends = (f.DjangoFilterBackend,)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -158,7 +158,7 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated],
         url_path='me')
     def me(self, request):
-        serializer = UserSerializer(request.user)
+        serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
@@ -189,7 +189,7 @@ class UserViewSet(viewsets.ModelViewSet):
         recipes_limit = request.query_params.get('recipes_limit')
         context = {'recipes_limit': recipes_limit}
         serializer = UserSerializerWithRecipes(user, context=context)
-        add_or_remove_from_profile(
+        return add_or_remove_from_profile(
             request,
             request.user.profile.subscriptions,
             user,
@@ -212,12 +212,10 @@ class UserViewSet(viewsets.ModelViewSet):
                 context=context,
                 many=True
             )
-            serializer.is_valid(raise_exception=True)
             return self.get_paginated_response(serializer.data)
         serializer = UserSerializerWithRecipes(
-            data=queryset,
+            queryset,
             context=context,
             many=True
         )
-        serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

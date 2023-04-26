@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib import admin
 from users.models import User
 
 
@@ -89,16 +88,4 @@ class RecipeIngredient(models.Model):
     class Meta:
         ordering = ['recipe']
         verbose_name = 'Связующая модель для рецепта и ингредиента'
-
-
-class RecipeIngredientInline(admin.TabularInline):
-    model = RecipeIngredient
-    min_num = 1
-
-
-class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'created', 'cooking_time')
-    list_filter = ('author', 'created', 'cooking_time')
-    search_fields = ('name', 'author__username', 'text')
-    model = Recipe
-    inlines = (RecipeIngredientInline,)
+        verbose_name_plural = 'Связующие модели для рецепта и ингредиента'

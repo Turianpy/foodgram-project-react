@@ -4,10 +4,9 @@ import sys
 
 from django.core.management import BaseCommand
 from recipes.models import Recipe
-
-from backend.tests.factories import (IngredientFactory, RandomIngredentFactory,
-                                     RecipeFactory, RecipeIngredientFactory,
-                                     TagFactory, UserFactory)
+from tests.factories import (IngredientFactory, RandomIngredentFactory,
+                             RecipeFactory, RecipeIngredientFactory,
+                             TagFactory, UserProfileFactory)
 
 
 class Command(BaseCommand):
@@ -29,8 +28,8 @@ class Command(BaseCommand):
                     name=ingredient['name'],
                     measurement_unit=ingredient['measurement_unit']
                 )
-
-        users = UserFactory.create_batch(10)
+        profiles = UserProfileFactory.create_batch(10)
+        users = [profile.user for profile in profiles]
         for u in users:
             RecipeFactory.create_batch(random.randint(1, 6), author=u)
         tags = TagFactory.create_batch(10)

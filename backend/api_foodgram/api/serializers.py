@@ -2,10 +2,9 @@ import base64
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.files.base import ContentFile
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
-
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User, UserProfile
 
 
@@ -22,21 +21,32 @@ class Base64ImageField(serializers.ImageField):
 
 
 class UserSerializer(serializers.ModelSerializer):
+
+    is_subscribed = serializers.SerializerMethodField(method_name='subscribed')
+
     class Meta:
         model = User
-        fields = ('email', 'username', 'first_name', 'last_name',)
+        fields = (
+            'email', 'username',
+            'first_name', 'last_name',
+            'id', 'is_subscribed'
+        )
+
+    def subscribed(self, obj):
+        user = self.context['request'].user
+        return user in obj.subscribers.all()
 
 
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ('name', 'measurement_unit')
+        fields = ('id', 'name', 'measurement_unit')
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('name', 'color', 'slug')
+        fields = ('id', 'name', 'color', 'slug')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -120,12 +130,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return instance
 
     def add_ingredients(self, instance, ingredients):
+        """
+        Bulk create RecipeIngredient objects for given recipe
+        """
         RecipeIngredient.objects.bulk_create([
             RecipeIngredient(
                 recipe=instance,
-                ingredient=ingredient['ingredient'],
+                ingredient=ingredient['ingredient']['id'],
                 amount=ingredient['amount']
-            ) for ingredient in ingredients
+            ) for ingredient in ingredients if ingredient.get('amount', None)
         ])
 
 
@@ -165,7 +178,15 @@ class UserCreateSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ('email', 'username', 'first_name', 'last_name', 'password',)
+        fields = (
+            'email', 'username',
+            'first_name', 'last_name',
+            'password', 'id'
+        )
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'id': {'read_only': True}
+        }
 
     def create(self, validated_data):
         password = validated_data.pop('password')

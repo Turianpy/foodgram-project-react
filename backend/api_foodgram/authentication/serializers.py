@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import check_password
 from rest_framework import serializers
 from users.models import User
 
@@ -16,6 +17,13 @@ class LoginSerializer(serializers.ModelSerializer):
         return value
 
     def validate_password(self, value):
-        if not User.objects.filter(password=value).exists():
+        user = User.objects.filter(email=self.initial_data['email']).first()
+
+        if user and not check_password(value, user.password):
             raise serializers.ValidationError('Неверный пароль')
         return value
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user'] = User.objects.filter(email=data['email']).first()
+        return data
