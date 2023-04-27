@@ -8,6 +8,12 @@ from rest_framework.validators import ValidationError
 from users.models import User, UserProfile
 
 
+MAX_COOKING_TIME = 32_000
+MIN_COOKING_TIME = 1
+MAX_AMOUNT = 32_000
+MIN_AMOUNT = 1
+
+
 class Base64ImageField(serializers.ImageField):
     """
     Custom serializer field for uploading base64 encoded images.
@@ -57,7 +63,10 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField(
         method_name='in_shopping_cart'
     )
-    cooking_time = serializers.IntegerField(min_value=1, max_value=32_000)
+    cooking_time = serializers.IntegerField(
+        min_value=MIN_COOKING_TIME,
+        max_value=MAX_COOKING_TIME
+    )
 
     class Meta:
         model = Recipe
@@ -85,6 +94,10 @@ class IngredientRecipeCreateSerializer(serializers.ModelSerializer):
         serializers.CharField(
             read_only=True,
             source='ingredient.measurement_unit'))
+    amount = serializers.IntegerField(
+        min_value=MIN_AMOUNT,
+        max_value=MAX_AMOUNT
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -147,7 +160,10 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
     Recipe serializer for use in various User serializers
     """
 
-    cooking_time = serializers.IntegerField(min_value=1, max_value=32_000)
+    cooking_time = serializers.IntegerField(
+        min_value=MIN_COOKING_TIME,
+        max_value=MAX_COOKING_TIME
+    )
 
     class Meta:
         model = Recipe
