@@ -79,7 +79,7 @@ jobs:
         with:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/api_foodgram:latest
-          context: backend
+          context: backend/
           file: backend/Dockerfile
       - name: notify if failed
         if: ${{ failure() }}
@@ -113,7 +113,7 @@ jobs:
           echo DB_PORT=${{ secrets.DB_PORT }} >> .env
           echo DJANGO_DEBUG=False >> .env
           sudo docker-compose up -d
-          sudo docker exec -i infra_backend_1 bash -c "python manage.py makemigrations; python manage.py migrate; python manage.py collectstatic --noinput"
+          sudo docker exec -i turian_backend_1 bash -c "python manage.py makemigrations; python manage.py migrate; python manage.py collectstatic --noinput"
     - name: notify if failed
       if: ${{ failure() }}
       uses: appleboy/telegram-action@master
