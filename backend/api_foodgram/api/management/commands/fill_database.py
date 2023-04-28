@@ -3,6 +3,7 @@ import random
 import sys
 
 from django.core.management import BaseCommand
+
 from recipes.models import Recipe
 from tests.factories import (IngredientFactory, RandomIngredentFactory,
                              RecipeFactory, RecipeIngredientFactory,

@@ -2,7 +2,8 @@ import base64
 from http import HTTPStatus
 
 import pytest
-from fixtures.user_fixtures import * # noqa
+
+from fixtures.user_fixtures import *  # noqa
 from recipes.models import Recipe
 from utils import assert_url_exists, check_pagination
 
@@ -53,9 +54,9 @@ class TestRecipes:
         encoded_image = base64.b64encode(recipe.image.read()).decode('utf-8')
         data = {
             "ingredients": [{
-                    "id": ingredient.id,
-                    "amount": 100
-                } for ingredient in ingredients],
+                "id": ingredient.id,
+                "amount": 100
+            } for ingredient in ingredients],
             "tags": [tag.id for tag in tags],
             "image": "data:image/jpeg;base64," + encoded_image,
             "name": recipe.name,
