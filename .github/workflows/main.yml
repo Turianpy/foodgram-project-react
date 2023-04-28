@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:13.1-alpine
+        image: postgres:latest
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: db
+          POSTGRES_DB: github_actions_db
         ports:
-          - 5432/tcp
+          - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
     - uses: actions/checkout@v2
@@ -35,7 +35,7 @@ jobs:
         pip install -r requirements.txt
         pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort
     
-    - name: prep database
+    - name: run migrations
       run : |
         cd backend/api_foodgram
         export SECRET_KEY=${{ secrets.SECRET_KEY }}
