@@ -26,24 +26,28 @@ def user(django_user_model, user_profile_factory):
 @pytest.fixture
 def superuser_token(user_superuser):
     token = AccessToken.for_user(user_superuser)
-    return {'Authorization': f'Bearer {token}'}
+    return {'access': str(token), }
 
 
 @pytest.fixture
 def user_token(user):
     token = AccessToken.for_user(user[0])
-    return {'Authorization': f'Bearer {token}'}
+    return {'access': str(token), }
 
 
 @pytest.fixture
 def superuser_client(superuser_token):
     client = APIClient()
-    client.credentials(**superuser_token)
+    client.credentials(
+        HTTP_AUTHORIZATION=f'Bearer {superuser_token["access"]}'
+    )
     return client
 
 
 @pytest.fixture
 def user_client(user_token):
     client = APIClient()
-    client.credentials(**user_token)
+    client.credentials(
+        HTTP_AUTHORIZATION=f'Bearer {user_token["access"]}'
+    )
     return client

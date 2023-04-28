@@ -1,4 +1,6 @@
-from factories import (RecipeFactory, IngredientFactory, RecipeIngredientFactory, TagFactory, UserFactory, UserProfileFactory)
+from factories import (IngredientFactory, RecipeFactory,
+                       RecipeIngredientFactory, TagFactory, UserFactory,
+                       UserProfileFactory)
 from pytest_factoryboy import register
 
 register(RecipeFactory)

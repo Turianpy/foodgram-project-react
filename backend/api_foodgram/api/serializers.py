@@ -7,7 +7,6 @@ from rest_framework import serializers
 from rest_framework.validators import ValidationError
 from users.models import User, UserProfile
 
-
 MAX_COOKING_TIME = 32_000
 MIN_COOKING_TIME = 1
 MAX_AMOUNT = 32_000

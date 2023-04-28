@@ -1,9 +1,8 @@
-from fixtures.user_fixtures import *
-
 import pytest
 
-from recipes.models import Recipe, Ingredient, RecipeIngredient, Tag
-from users.models import User, UserProfile
+from fixtures.user_fixtures import *
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from users.models import UserProfile
 
 
 @pytest.mark.django_db(transaction=True)

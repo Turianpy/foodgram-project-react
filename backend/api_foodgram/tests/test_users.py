@@ -1,6 +1,7 @@
+import pytest
+
 from http import HTTPStatus
 
-import pytest
 from fixtures.user_fixtures import *
 from utils import assert_url_exists, check_pagination
 
@@ -22,14 +23,15 @@ class TestUsers:
             'возвращается статус 200'
         )
 
-    def test_users_me(self, user_client):
+    def test_users_me(self, user_client, user):
+        u, _ = user
         response = user_client.get(self.users_me)
         assert_url_exists(response, self.users_me)
         assert response.status_code == HTTPStatus.OK, (
             f'Проверьте, что при GET запросе на {self.users_me} '
             'возвращается статус 200'
         )
-        assert response.json()['email'] == user_client.user.email, (
+        assert response.json()['email'] == u.email, (
             f'Проверьте, что при GET запросе на {self.users_me} '
             'возвращается информация о текущем пользователе'
         )

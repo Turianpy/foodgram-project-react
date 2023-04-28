@@ -1,6 +1,7 @@
+import pytest
+
 from http import HTTPStatus
 
-import pytest
 from fixtures.user_fixtures import *
 from utils import assert_url_exists
 
@@ -71,23 +72,6 @@ class TestAuth:
             'с существующим username или email возвращается статус 400'
         )
 
-    def test_login(self, client, user_factory):
-        user = user_factory.create()
-        data = {
-            'email': user.email,
-            'password': user.password
-        }
-        response = client.post(self.login_url, data=data)
-        assert_url_exists(response, self.login_url)
-        assert response.status_code == HTTPStatus.OK, (
-            f'Проверьте, что при POST запросе на {self.login_url} '
-            'с корректными данными возвращается статус 200'
-        )
-        assert 'auth_token' in response.data, (
-            f'Проверьте, что при POST запросе на {self.login_url} '
-            'возвращается токен'
-        )
-
     def test_nodata_login(self, client):
         response = client.post(self.login_url)
         assert_url_exists(response, self.login_url)
@@ -96,25 +80,26 @@ class TestAuth:
             'с некорректными данными возвращается статус 400'
         )
 
-    def test_logout(self, client, user_factory):
+    def test_login_logout(self, client, user_factory, user_client):
         user = user_factory.create()
+        user.set_password('Tester123987')
+        user.save()
         data = {
-            'email': user.email,
-            'password': user.password
+            "email": user.email,
+            "password": 'Tester123987'
         }
         response = client.post(self.login_url, data=data)
         assert_url_exists(response, self.login_url)
         assert response.status_code == HTTPStatus.OK, (
             f'Проверьте, что при POST запросе на {self.login_url} '
             'с корректными данными возвращается статус 200'
+            f'{response.data}'
         )
         assert 'auth_token' in response.data, (
             f'Проверьте, что при POST запросе на {self.login_url} '
             'возвращается токен'
         )
-        token = response.data['auth_token']
-        client.credentials(HTTP_AUTHORIZATION=f'Token {token}')
-        response = client.post(self.logout_url)
+        response = user_client.post(self.logout_url)
         assert_url_exists(response, self.logout_url)
         assert response.status_code == HTTPStatus.NO_CONTENT, (
             f'Проверьте, что при POST запросе на {self.logout_url} '
