@@ -37,7 +37,7 @@ jobs:
     
     - name: prep database
       run : |
-        cd backend
+        cd backend/api_foodgram
         python manage.py makemigrations
         python manage.py migrate
     
