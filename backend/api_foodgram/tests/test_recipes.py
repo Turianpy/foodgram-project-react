@@ -1,9 +1,8 @@
 import base64
-import pytest
-
 from http import HTTPStatus
 
-from fixtures.user_fixtures import *
+import pytest
+from fixtures.user_fixtures import * # noqa
 from recipes.models import Recipe
 from utils import assert_url_exists, check_pagination
 
@@ -15,7 +14,7 @@ class TestRecipes:
     recipe_detail_url = '/api/v1/recipes/{id}/'
     recipe_favorite_url = '/api/v1/recipes/{id}/favorite/'
     recipe_shopping_cart_url = '/api/v1/recipes/{id}/shopping_cart/'
-    recipe_download_shopping_cart_url = '/api/v1/recipes/download_shopping_cart/'
+    recipe_download_shopping_cart_url = recipe_url + 'download_shopping_cart/'
     favorited_recipes_query = '/api/v1/recipes/?is_favorited=1'
     shopping_cart_recipes_query = '/api/v1/recipes/?is_in_shopping_cart=1'
 
@@ -117,24 +116,28 @@ class TestRecipes:
         response = user_client.post(url)
         assert_url_exists(response, url)
         assert response.status_code == HTTPStatus.CREATED, (
-            f'Проверьте, что при POST запросе на {self.recipe_favorite_url}id/ '
+            'Проверьте, что при POST запросе на '
+            f'{self.recipe_favorite_url}id/ '
             'возвращается статус 201'
         )
         print(response.data)
         assert response.json()['name'] == recipe.name, (
-            f'Проверьте, что при POST запросе на {self.recipe_favorite_url}id/ '
+            'Проверьте, что при POST запросе на'
+            f'{self.recipe_favorite_url}id/ '
             'возвращается информация о рецепте'
         )
         assert profile in Recipe.objects.last().favorited_by.all()
         response = user_client.delete(url)
         assert_url_exists(response, url)
         assert response.status_code == HTTPStatus.NO_CONTENT, (
-            f'Проверьте, что при DELETE запросе на {self.recipe_favorite_url}id/ '
+            'Проверьте, что при DELETE запросе на'
+            f'{self.recipe_favorite_url}id/ '
             'возвращается статус 204'
         )
         response = user_client.get(self.recipe_detail_url.format(id=recipe.id))
         assert response.json()['is_favorited'] is False, (
-            f'Проверьте, что после DELETE запроса на {self.recipe_favorite_url}id/ '
+            'Проверьте, что после DELETE запроса на'
+            f'{self.recipe_favorite_url}id/ '
             'рецепт удаляется из избранного'
         )
 
@@ -144,31 +147,35 @@ class TestRecipes:
         response = user_client.post(url)
         assert_url_exists(response, url)
         assert response.status_code == HTTPStatus.CREATED, (
-            f'Проверьте, что при POST запросе на {self.recipe_shopping_cart_url}id/ '
+            'Проверьте, что при POST запросе на '
+            f'{self.recipe_shopping_cart_url}id/ '
             'возвращается статус 201'
         )
         response = user_client.get(self.recipe_detail_url.format(id=recipe.id))
         assert response.json()['is_in_shopping_cart'], (
-            f'Проверьте, что после POST запроса на {self.recipe_shopping_cart_url}'
+            'Проверьте, что после POST запроса на '
+            f'{self.recipe_shopping_cart_url}'
             f'следующий GET на {self.recipe_detail_url} вернет True под ключем'
             'is_in_shopping_cart'
         )
         response = user_client.delete(url)
         assert_url_exists(response, url)
         assert response.status_code == HTTPStatus.NO_CONTENT, (
-            f'Проверьте, что при DELETE запросе на {self.recipe_shopping_cart_url}id/ '
+            'Проверьте, что при DELETE запросе на'
+            f'{self.recipe_shopping_cart_url}id/ '
             'возвращается статус 204'
         )
         response = user_client.get(self.recipe_detail_url.format(id=recipe.id))
         assert response.json()['is_in_shopping_cart'] is False, (
-            f'Проверьте, что после DELETE запроса на {self.recipe_shopping_cart_url}id/ '
+            'Проверьте, что после DELETE запроса на'
+            f'{self.recipe_shopping_cart_url}id/ '
             'рецепт удаляется из корзины'
         )
-    
+
     def test_download_shopping_cart(
             self, user_client,
             recipe_ingredient_factory
-        ):
+    ):
         recipe_ingredient_factory.create()
         recipe = Recipe.objects.last()
         url = self.recipe_shopping_cart_url.format(id=recipe.id)
@@ -180,7 +187,8 @@ class TestRecipes:
             f'Проверьте, что при GET запросе на {dl_url} '
             'возвращается статус 200'
         )
-        assert response['Content-Disposition'] == 'attachment; filename="shopping_cart.txt"', (
+        expected_disposition = 'attachment; filename="shopping_cart.txt"'
+        assert response['Content-Disposition'] == expected_disposition, (
             f'Проверьте, что при GET запросе на {dl_url} '
             'возвращается файл с правильным именем'
         )
