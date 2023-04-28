@@ -2,6 +2,7 @@ import random
 
 import factory
 from faker import Faker
+
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User, UserProfile
 
