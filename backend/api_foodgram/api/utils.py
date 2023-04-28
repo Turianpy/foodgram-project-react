@@ -14,3 +14,4 @@ def add_or_remove_from_profile(request, field, object, serializer_data):
     if request.method == 'DELETE':
         field.remove(object)
         return response.Response(status=status.HTTP_204_NO_CONTENT)
+    return response.Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

@@ -2,9 +2,10 @@ import base64
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.files.base import ContentFile
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
+
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User, UserProfile
 
 MAX_COOKING_TIME = 32_000
