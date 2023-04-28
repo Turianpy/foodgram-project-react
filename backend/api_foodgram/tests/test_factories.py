@@ -1,5 +1,4 @@
 import pytest
-
 from fixtures.user_fixtures import *  # noqa
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import UserProfile

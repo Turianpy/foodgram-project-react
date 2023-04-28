@@ -2,7 +2,6 @@ import base64
 from http import HTTPStatus
 
 import pytest
-
 from fixtures.user_fixtures import *  # noqa
 from recipes.models import Recipe
 from utils import assert_url_exists, check_pagination
