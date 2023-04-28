@@ -3,8 +3,9 @@ from http import HTTPStatus
 
 import pytest
 from fixtures.user_fixtures import *  # noqa
-from recipes.models import Recipe
 from utils import assert_url_exists, check_pagination
+
+from recipes.models import Recipe
 
 
 @pytest.mark.django_db(transaction=True)

@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 import pytest
-from fixtures.user_fixtures import * # noqa
+from fixtures.user_fixtures import *  # noqa
 from utils import assert_url_exists
 
 
