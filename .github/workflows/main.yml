@@ -11,6 +11,16 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13.1-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: db
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.8
@@ -24,6 +34,12 @@ jobs:
         cd backend
         pip install -r requirements.txt
         pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort
+    
+    - name: prep database
+      run : |
+        cd backend
+        python manage.py makemigrations
+        python manage.py migrate
     
     - name: flake8 and pytest
       run: |
