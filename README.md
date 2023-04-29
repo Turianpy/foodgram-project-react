@@ -1,4 +1,4 @@
-# Workflow status ![foodgram_workflow](https://github.com/Turianpy/foodgram-project-react/actions/workflows/foodgram_workflow/badge.svg)](https://github.com/Turianpy/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
+# Workflow status ![foodgram_workflow](https://github.com/Turianpy/foodgram-project-react/actions/workflows/foodgram_workflow/badge.svg)
 
 # Описание проекта Foodgram
 
