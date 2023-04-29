@@ -94,27 +94,16 @@ jobs:
     needs: push_new_img_to_dhub
     if: github.ref == 'refs/heads/master'
     steps:
-    - name: Start SSH agent
-      uses: webfactory/ssh-agent@v0.4.1
-      with:
-        ssh-private-key: ${{ secrets.SSH_KEY }}
-        ssh-passphrase: ${{ secrets.PASSPHRASE }}
-    - name: Clone repository or pull latest
-      run: |
-        ssh-add -D
-        ssh-add
-        git clone git@github.com:Turianpy/foodgram-project-react.git || (cd foodgram-project-react && git pull origin master)
-      env:
-        SSH_AUTH_SOCK: ${{ env.SSH_AUTH_SOCK }}
     - name: Deploy application
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}Job ${{ job.name }} 
+        key: ${{ secrets.SSH_KEY }}
         run: |
+          git clone git@github.com:Turianpy/foodgram-project-react.git || (cd foodgram-project-react && git pull origin master)
           cd foodgram-project-react/infra
-          docker-compose down -v
+          sudo docker-compose down -v
           rm .env
           touch .env
           echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
