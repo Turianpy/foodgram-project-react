@@ -94,17 +94,20 @@ jobs:
     needs: push_new_img_to_dhub
     if: github.ref == 'refs/heads/master'
     steps:
-    - name: execute remote ssh commands to deploy
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.PASSPHRASE }}
-        script: |
-          echo "${{ secrets.PASSPHRASE }}" > passphrase.txt
-          export SSH_ASKPASS="$PWD/passphrase.txt"
-          git clone https://github.com/Turianpy/foodgram-project-react.git || (cd foodgram-project-react && git pull origin master)
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.4.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+          ssh-passphrase: ${{ secrets.PASSPHRASE }}
+      - name: Clone repository or pull latest
+        run: |
+          ssh-add -D
+          ssh-add
+          git clone git@github.com:Turianpy/foodgram-project-react.git || (cd foodgram-project-react && git pull origin master)
+        env:
+          SSH_AUTH_SOCK: ${{ env.SSH_AUTH_SOCK }}
+      - name: Deploy application
+        run: |
           cd foodgram-project-react/infra
           docker-compose down -v
           rm .env
@@ -119,6 +122,7 @@ jobs:
           echo DJANGO_DEBUG=False >> .env
           sudo docker-compose up -d
           sudo docker exec -i infra_backend_1 bash -c "python manage.py makemigrations; python manage.py migrate; python manage.py collectstatic --noinput"
+
     - name: notify if failed
       if: ${{ failure() }}
       uses: appleboy/telegram-action@master
