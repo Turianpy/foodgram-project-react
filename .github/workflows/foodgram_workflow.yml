@@ -94,14 +94,15 @@ jobs:
     needs: push_new_img_to_dhub
     if: github.ref == 'refs/heads/master'
     steps:
-    - name: Deploy application
+    - name: execute remote ssh commands to deploy
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
+        username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
-        run: |
-          git clone git@github.com:Turianpy/foodgram-project-react.git || (cd foodgram-project-react && git pull origin master)
+        passphrase: ${{ secrets.PASSPHRASE }}
+        script: |
+          git clone https://github.com/Turianpy/foodgram-project-react.git || (cd foodgram-project-react && git pull origin master)
           cd foodgram-project-react/infra
           sudo docker-compose down -v
           rm .env
@@ -115,7 +116,7 @@ jobs:
           echo DB_PORT=${{ secrets.DB_PORT }} >> .env
           echo DJANGO_DEBUG=False >> .env
           sudo docker-compose up -d
-          sudo docker exec -i infra_backend_1 bash -c "python manage.py makemigrations; python manage.py migrate; python manage.py collectstatic --noinput"
+          sudo docker exec -i infra_backend_1 bash -c "python manage.py makemigrations; 
     - name: notify if failed
       if: ${{ failure() }}
       uses: appleboy/telegram-action@master
