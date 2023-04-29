@@ -49,6 +49,25 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
+class IngredientSerializerWithAmount(serializers.ModelSerializer):
+    """
+    Serializer for Ingredient model with amount field
+    """
+    amount = serializers.IntegerField(
+        min_value=MIN_AMOUNT,
+        max_value=MAX_AMOUNT
+    )
+    id = serializers.IntegerField(source='ingredient.id')
+    name = serializers.CharField(source='ingredient.name')
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit'
+    )
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -56,7 +75,10 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    ingredients = IngredientSerializer(many=True)
+    ingredients = IngredientSerializerWithAmount(
+        many=True,
+        source='recipe_ingredients'
+    )
     tags = TagSerializer(many=True)
     author = UserSerializer()
     is_favorited = serializers.SerializerMethodField(method_name='favorited')
