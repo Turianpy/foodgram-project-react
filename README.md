@@ -23,6 +23,9 @@ POSTGRES_USER=<имя пользователя>
 POSTGRES_PASSWORD=<пароль>
 DB_HOST=<адрес хоста или название контейнера (db по умолчанию)>
 DB_PORT=5432
+SECRET_KEY=<django secret key>
+DEBUG=<True или False>
+```
 ```
 
 4. Запустите docker-compose:
