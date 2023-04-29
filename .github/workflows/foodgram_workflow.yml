@@ -102,11 +102,11 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
-          docker-compose down -v
           echo "${{ secrets.PASSPHRASE }}" > passphrase.txt
           export SSH_ASKPASS="$PWD/passphrase.txt"
           git clone https://github.com/Turianpy/foodgram-project-react.git || (cd foodgram-project-react && git pull origin master)
           cd foodgram-project-react/infra
+          docker-compose down -v
           rm .env
           touch .env
           echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
