@@ -118,7 +118,7 @@ jobs:
           echo DJANGO_DEBUG=False >> .env
           sudo docker-compose up -d
           sudo docker exec -i infra_backend_1 bash -c "python manage.py makemigrations; python manage.py migrate; python manage.py collectstatic --noinput"
-          sudo docker exec -i infra_backend_1 bash -c "python manage.py create_ingredients_and_tags"
+          sudo docker exec -i infra_backend_1 bash -c "python manage.py create_ingredients_and_tags fillder_data/"
     - name: notify if failed
       if: ${{ failure() }}
       uses: appleboy/telegram-action@master
