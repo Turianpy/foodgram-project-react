@@ -47,11 +47,3 @@ docker-compose exec -i infra_backend_1 python manage.py collectstatic --no-input
 Сайт будет доступен на localhost, а API на localhost/api
 
 Документация к API доступна по адресу localhost/api/docs
-
-## Доступ к запущенному проекту в Yandex Cloud для ревью
-
-Сайт доступен по адресу http://158.160.62.222
-
-API доступно по адресу http://158.160.62.222/api
-
-суперюзер - email: admin@foodgram.com | password: admin
